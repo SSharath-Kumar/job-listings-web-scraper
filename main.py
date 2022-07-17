@@ -5,17 +5,26 @@ from datetime import date
 from bs4 import BeautifulSoup
 
 
-def linkedin_job_scraper(title, location):
+def set_location_string(location):
+    loc_url_string = location
+    if " " in location:
+        loc_url_string = loc_url_string.replace(" ", "%20")
+    if "," in location:
+        loc_url_string = loc_url_string.replace(",", "%2C")
+    return loc_url_string
+
+
+def linkedin_job_scraper(keywords, location):
     # title = "Software Developer"
     # location = "Texas"
 
     # Building the search string
     search_string = 'https://www.linkedin.com/jobs/search?'
-    title_string = "keywords=" + title.replace(" ", "%20")
-    location_string = "&location=" + location.replace(" ", "%20")
+    keyword_string = "keywords=" + keywords.replace(" ", "%20")
+    location_string = "&location=" + set_location_string(location)
     end_string = "&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&position=1&pageNum=0"
-    final_search_string = search_string + title_string + location_string + end_string
-    print('SEARCH STRING ', final_search_string)
+    final_search_string = search_string + keyword_string + location_string + end_string
+    print('LINKEDIN SEARCH STRING: ', final_search_string)
 
     # Get the response web page
     html_response = requests.get(final_search_string).text
@@ -40,6 +49,10 @@ def linkedin_job_scraper(title, location):
         posted_date = job.find('time').text.strip()
         link_to_listing = job.find('a')['href']
         today = date.today()
+
+        # Filtering Jobs
+        if 'Volunteer' in job_title:
+            continue
 
         # Create a row with all details and add to main list
         row = [job_title, company_name, location, posted_date, link_to_listing, today]
@@ -74,7 +87,7 @@ def draft_csv(csv_file_name, listings):
 
 def sort_csv_data(csv_file_name):
     data = pd.read_csv(csv_file_name)
-    data.sort_values(["Company", "Location", "Posted On"], axis=0, inplace=True)
+    data.sort_values(["Company", "Location"], axis=0, inplace=True)
     data.to_csv('LinkedIn_Listings.csv')
 
 
@@ -83,4 +96,3 @@ if __name__ == "__main__":
     job_listings = linkedin_job_scraper('Software Developer', 'Texas')
     draft_csv(file, job_listings)
     sort_csv_data(file)
-
