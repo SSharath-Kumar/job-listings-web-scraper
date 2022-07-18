@@ -1,8 +1,9 @@
-import requests
+import time
 import csv
 import pandas as pd
 from datetime import date
 from bs4 import BeautifulSoup
+from selenium import webdriver
 
 
 def set_location_string(location):
@@ -27,7 +28,8 @@ def linkedin_job_scraper(keywords, location):
     print('LINKEDIN SEARCH STRING: ', final_search_string)
 
     # Get the response web page
-    html_response = requests.get(final_search_string).text
+    html_response = scroll_and_scrape(final_search_string)
+    # html_response = requests.get(final_search_string).text # Needs import requests
     soup = BeautifulSoup(html_response, 'html.parser')
     '''
     # Initial scraping
@@ -68,6 +70,23 @@ def linkedin_job_scraper(keywords, location):
     return job_list
 
 
+def scroll_and_scrape(url):
+    driver = webdriver.Chrome(r"C:\\MS-CS\\Other\\Projects\\job-listings-web-scraper\\web-drivers\\chromedriver.exe")
+    driver.get(url)
+    driver.maximize_window()
+    while True:
+        driver.execute_script("window.scrollBy(0, document.body.scrollHeight);")
+        time.sleep(7)
+        current_page = driver.page_source
+        soup = BeautifulSoup(current_page, 'html.parser')
+        see_more = soup.find('button', class_="infinite-scroller__show-more-button "
+                                              "infinite-scroller__show-more-button--visible")
+        if see_more is not None:
+            driver.close()
+            break
+    return current_page
+
+
 def draft_csv(csv_file_name, listings):
     with open(csv_file_name, 'w+', newline='') as csv_file:
         # Setting up writer
@@ -86,7 +105,7 @@ def draft_csv(csv_file_name, listings):
 
 
 def sort_csv_data(csv_file_name):
-    data = pd.read_csv(csv_file_name)
+    data = pd.read_csv(csv_file_name, encoding='unicode_escape')
     data.sort_values(["Company", "Location"], axis=0, inplace=True)
     data.to_csv('LinkedIn_Listings.csv')
 
