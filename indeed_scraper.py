@@ -35,8 +35,12 @@ def scraper(soup):
         job_title = listing.find('a').text.strip()
         company = listing.find('span', class_='companyName').text.strip()
         location = listing.find('div', class_='companyLocation').text.strip()
-        posted_on = listing.find('span', class_='date').text.strip()
+
+        posted_on = listing.find('span', class_='date').text
         posted_on = posted_on.replace('Posted', '')
+        posted_on = posted_on.replace('EmployerActive', '')
+        posted_on = posted_on.strip()
+
         link_to_listing = place_holder_url + listing.find('a')['href']
         today = date.today()
         job = {
@@ -53,6 +57,9 @@ def scraper(soup):
 def sort_data(listings):
     df = pd.DataFrame(listings)
     df.sort_values(['Company', 'Location'], axis=0, inplace=True)
+    # duplicate_count = len(df.duplicated())
+    df.drop_duplicates(subset=['Job Title', 'Company', 'Location', 'Posted On'], inplace=True)
+    df.drop_duplicates(subset=['Job Title', 'Company', 'Posted On', 'Link to listing'], inplace=True)
     return df
 
 
