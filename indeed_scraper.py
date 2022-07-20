@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from pandas.api.types import CategoricalDtype
 from datetime import date
 from bs4 import BeautifulSoup
 
@@ -56,7 +57,17 @@ def scraper(soup):
 
 def sort_data(listings):
     df = pd.DataFrame(listings)
-    df.sort_values(['Company', 'Location'], axis=0, inplace=True)
+    # Setting up a custom sorting order
+    cat_order_list = ['Hiring ongoing', 'Just posted', 'Today', '1 day ago']
+    for n in range(2, 30):
+        cat_order_list.append(f'{n} days ago')
+    cat_order_list.append('30+ days ago')
+
+    cat_order = CategoricalDtype(cat_order_list, ordered=True)
+    df['Posted On'] = df['Posted On'].astype(cat_order)
+    # Sort rows based on company and posting date
+    df.sort_values(["Company", "Posted On"], axis=0, inplace=True)
+
     # duplicate_count = len(df.duplicated())
     df.drop_duplicates(subset=['Job Title', 'Company', 'Location', 'Posted On'], inplace=True)
     df.drop_duplicates(subset=['Job Title', 'Company', 'Posted On', 'Link to listing'], inplace=True)
@@ -70,4 +81,4 @@ if __name__ == "__main__":
         scraper(indeed_soup)
     data = sort_data(job_listings)
     file = 'Indeed_Listings.csv'
-    data.to_csv(file)
+    data.to_csv(file, index=False)
