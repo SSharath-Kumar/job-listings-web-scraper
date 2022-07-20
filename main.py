@@ -3,6 +3,7 @@ import csv
 import pandas as pd
 from datetime import date
 from bs4 import BeautifulSoup
+from pandas import CategoricalDtype
 from selenium import webdriver
 
 
@@ -57,7 +58,7 @@ def linkedin_job_scraper(keywords, location):
             continue
 
         # Create a row with all details and add to main list
-        row = [job_title, company_name, location, posted_date, link_to_listing, today]
+        row = [today, job_title, company_name, location, posted_date, link_to_listing]
         job_list.append(row)
 
         # Displaying info -> Building purpose only
@@ -99,15 +100,35 @@ def draft_csv(csv_file_name, listings):
             if line is not None:
                 line_count += 0
         if line_count == 0:
-            fields = ['Job Title', 'Company', 'Location', 'Posted On', 'Link to posting', 'Date Scraped']
+            fields = ['Date Scraped', 'Job Title', 'Company', 'Location', 'Posted On', 'Link to posting']
             csv_writer.writerow(fields)
         csv_writer.writerows(listings)
 
 
 def sort_csv_data(csv_file_name):
-    data = pd.read_csv(csv_file_name, encoding='unicode_escape')
-    data.sort_values(["Company", "Location"], axis=0, inplace=True)
-    data.to_csv('LinkedIn_Listings.csv')
+    df = pd.read_csv(csv_file_name, encoding='unicode_escape')
+
+    cat_order_list = ['1 minute ago']
+    for m in range(2, 60):
+        cat_order_list.append(f'{m} minutes ago')
+    cat_order_list.append('1 hour ago')
+    for h in range(2, 24):
+        cat_order_list.append(f'{h} hours ago')
+    cat_order_list.append('1 day ago')
+    for d in range(2, 7):
+        cat_order_list.append(f'{d} days ago')
+    cat_order_list.append('1 week ago')
+    for w in range(2, 5):
+        cat_order_list.append(f'{w} weeks ago')
+    cat_order_list.append('1 month ago')
+    for m in range(2, 12):
+        cat_order_list.append(f'{m} months ago')
+
+    cat_order = CategoricalDtype(cat_order_list, ordered=True)
+    df['Posted On'] = df['Posted On'].astype(cat_order)
+    # Sort rows based on company and posting date
+    df.sort_values(["Company", "Posted On"], axis=0, inplace=True)
+    df.to_csv('LinkedIn_Listings.csv', index=False)
 
 
 if __name__ == "__main__":
