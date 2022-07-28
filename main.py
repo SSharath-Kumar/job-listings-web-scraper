@@ -1,3 +1,4 @@
+import os
 import time
 import csv
 import pandas as pd
@@ -72,7 +73,8 @@ def linkedin_job_scraper(keywords, location):
 
 
 def scroll_and_scrape(url):
-    driver = webdriver.Chrome(r"C:\\MS-CS\\Other\\Projects\\job-listings-web-scraper\\web-drivers\\chromedriver.exe")
+    webdriver_path = os.getcwd() + "\\web-drivers\\chromedriver.exe"
+    driver = webdriver.Chrome(webdriver_path)
     driver.get(url)
     driver.maximize_window()
     while True:
@@ -128,11 +130,13 @@ def sort_csv_data(csv_file_name):
     df['Posted On'] = df['Posted On'].astype(cat_order)
     # Sort rows based on company and posting date
     df.sort_values(["Company", "Posted On"], axis=0, inplace=True)
-    df.to_csv('LinkedIn_Listings.csv', index=False)
+    df.to_csv(output_path + 'LinkedIn_Listings.csv', index=False)
+    os.remove(csv_file_name)
 
 
 if __name__ == "__main__":
-    file = 'temp.csv'
+    output_path = os.getcwd() + '\\output\\'
+    file = output_path + 'temp.csv'
     job_listings = linkedin_job_scraper('Software Developer', 'Texas')
     draft_csv(file, job_listings)
     sort_csv_data(file)
