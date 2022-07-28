@@ -1,8 +1,9 @@
-import requests
+import os
 import pandas as pd
 from pandas.api.types import CategoricalDtype
 from datetime import date
 from bs4 import BeautifulSoup
+from selenium import webdriver
 
 
 def set_location_string(location):
@@ -23,9 +24,14 @@ def indeed_job_scraper_setup(keywords, location, page):
     final_search_string = search_string + keyword_string + location_string + end_string
     # print(f'INDEED SEARCH STRING: {final_search_string}')
 
+    webdriver_path = os.getcwd() + "\\web-drivers\\chromedriver.exe"
+    driver = webdriver.Chrome(webdriver_path)
+    driver.get(final_search_string)
+
     # Get the response web page
-    html_response = requests.get(final_search_string).text
-    soup = BeautifulSoup(html_response, 'html.parser')
+    # html_response = requests.get(final_search_string).text
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    driver.close()
     return soup
 
 
@@ -80,5 +86,6 @@ if __name__ == "__main__":
         indeed_soup = indeed_job_scraper_setup('Software Developer', 'Texas', i)
         scraper(indeed_soup)
     data = sort_data(job_listings)
-    file = 'Indeed_Listings.csv'
-    data.to_csv(file, index=False)
+    working_dir = os.getcwd()
+    out_file = working_dir + '\\output\\Indeed_Listings.csv'
+    data.to_csv(out_file, index=False)
