@@ -4,6 +4,8 @@ from pandas.api.types import CategoricalDtype
 from datetime import date
 from bs4 import BeautifulSoup
 from selenium import webdriver
+# Global list
+job_listings = []
 
 
 def set_location_string(location):
@@ -80,10 +82,9 @@ def sort_data(listings):
     return df
 
 
-if __name__ == "__main__":
-    job_listings = []
+def scrape_init(title, location):
     for i in range(0, 190, 10):
-        indeed_soup = indeed_job_scraper_setup('Software Developer', 'Texas', i)
+        indeed_soup = indeed_job_scraper_setup(title, location, i)
         scraper(indeed_soup)
     data = sort_data(job_listings)
     working_dir = os.getcwd()

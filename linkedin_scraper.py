@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 from pandas import CategoricalDtype
 from selenium import webdriver
 
+output_path = os.getcwd() + '\\output\\'
+
 
 def set_location_string(location):
     loc_url_string = location
@@ -134,9 +136,8 @@ def sort_csv_data(csv_file_name):
     os.remove(csv_file_name)
 
 
-if __name__ == "__main__":
-    output_path = os.getcwd() + '\\output\\'
+def scrape_init(title, location):
     file = output_path + 'temp.csv'
-    job_listings = linkedin_job_scraper('Software Developer', 'Texas')
+    job_listings = linkedin_job_scraper(title, location)
     draft_csv(file, job_listings)
     sort_csv_data(file)
