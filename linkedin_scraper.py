@@ -29,7 +29,7 @@ def linkedin_job_scraper(keywords, location):
     location_string = "&location=" + set_location_string(location)
     end_string = "&geoId=&trk=homepage-jobseeker_jobs-search-bar_search-submit&position=1&pageNum=0"
     final_search_string = search_string + keyword_string + location_string + end_string
-    print('LINKEDIN SEARCH STRING: ', final_search_string)
+    # print('LINKEDIN SEARCH STRING: ', final_search_string)
 
     # Get the response web page
     html_response = scroll_and_scrape(final_search_string)
@@ -104,7 +104,7 @@ def draft_csv(csv_file_name, listings):
             if line is not None:
                 line_count += 0
         if line_count == 0:
-            fields = ['Date Scraped', 'Job Title', 'Company', 'Location', 'Posted On', 'Link to posting']
+            fields = ['Date scraped', 'Job Title', 'Company', 'Location', 'Posted On', 'Link to listing']
             csv_writer.writerow(fields)
         csv_writer.writerows(listings)
 
